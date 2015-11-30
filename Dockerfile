@@ -1,7 +1,7 @@
 # Dockerfile for RDKit and PostgreSQL cartridge
 # See the GitHub for more info: https://github.com/InformaticsMatters/rdkit_cartridge
 
-FROM informaticsmatters/rdkit
+FROM informaticsmatters/rdkit:Release_2015_09_2
 MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
