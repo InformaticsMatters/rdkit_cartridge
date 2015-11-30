@@ -18,7 +18,9 @@ RUN apt-get update && apt-get install -y \
  postgresql-9.4\
  postgresql-client-9.4\
  postgresql-contrib-9.4\
- postgresql-server-dev-9.4
+ postgresql-server-dev-9.4\
+ postgresql-plpython-9.4\
+ postgresql-plpython3-9.4
 
 
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.4`` package when it was ``apt-get installed``
