@@ -1,29 +1,40 @@
-# Dockerfile for RDKit and PostgreSQL cartridge
-# See the GitHub for more info: https://github.com/InformaticsMatters/rdkit_cartridge
-
-FROM informaticsmatters/rdkit
+FROM debian:jessie
 MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+# WARNING this takes about an hour to build
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 
-# Add PostgreSQL's repository for 9.4. 
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.4" > /etc/apt/sources.list.d/pgdg.list
+# Add PostgreSQL's repository for 9.5. 
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5" > /etc/apt/sources.list.d/pgdg.list
 
-# Install PostgreSQL 9.4
-#  There are some warnings (in red) that show up during the build. You can hide
-#  them by prefixing each apt-get statement with DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
- postgresql-9.4\
- postgresql-client-9.4\
- postgresql-contrib-9.4\
- postgresql-server-dev-9.4\
- postgresql-plpython-9.4\
- postgresql-plpython3-9.4
+ flex\
+ bison\
+ build-essential\
+ python-numpy\
+ cmake\
+ python-dev\
+ sqlite3\
+ libsqlite3-dev\
+ libboost-dev\
+ libboost-system-dev\
+ libboost-thread-dev\
+ libboost-serialization-dev\
+ libboost-python-dev\
+ libboost-regex-dev\
+ git\
+ wget\
+ zip\
+ postgresql-9.5\
+ postgresql-client-9.5\
+ postgresql-contrib-9.5\
+ postgresql-server-dev-9.5\
+ postgresql-plpython-9.5\
+ postgresql-plpython3-9.5
 
-
-# Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.4`` package when it was ``apt-get installed``
+# Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.5`` package when it was ``apt-get installed``
 USER postgres
 
 # Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
@@ -36,28 +47,29 @@ RUN    /etc/init.d/postgresql start &&\
 
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible. 
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.4/main/pg_hba.conf
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.5/main/pg_hba.conf
 
-# And add ``listen_addresses`` to ``/etc/postgresql/9.4/main/postgresql.conf``
-RUN echo "listen_addresses='*'" >> /etc/postgresql/9.4/main/postgresql.conf
+# And add ``listen_addresses`` to ``/etc/postgresql/9.5/main/postgresql.conf``
+RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
 
-USER postgres
-RUN /usr/lib/postgresql/9.4/bin/postgres -D /var/lib/postgresql/9.4/main -c config_file=/etc/postgresql/9.4/main/postgresql.conf &
 
 USER root
-# now install the RDkit cartridge into Postgres
-WORKDIR $RDBASE/Code/PgSQL/rdkit
-RUN make && make install
-WORKDIR /
+ENV RDKIT_BRANCH=master
+RUN git clone -b $RDKIT_BRANCH --single-branch https://github.com/rdkit/rdkit.git
 
+ENV RDBASE=/rdkit
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib:/usr/lib/x86_64-linux-gnu
+ENV PYTHONPATH=$PYTHONPATH:$RDBASE
 
-# Expose the PostgreSQL port
-EXPOSE 5432
-
-# Add VOLUMEs to allow backup of config, logs and databases
-VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+RUN mkdir $RDBASE/build
+WORKDIR $RDBASE/build
+RUN cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DPostgreSQL_ROOT=/usr/lib/postgresql/9.5 .. 
+RUN make
+RUN make install
+#RUN Code/PgSQL/rdkit/pgsql_install.sh
 
 USER postgres
-
-# Set the default command to run when starting the container
-CMD ["/usr/lib/postgresql/9.4/bin/postgres", "-D", "/var/lib/postgresql/9.4/main", "-c", "config_file=/etc/postgresql/9.4/main/postgresql.conf"]
+WORKDIR $RDBASE
+RUN /usr/lib/postgresql/9.5/bin/postgres -D /var/lib/postgresql/9.5/main -c config_file=/etc/postgresql/9.5/main/postgresql.conf &
+# Expose the PostgreSQL port
+EXPOSE 5432
