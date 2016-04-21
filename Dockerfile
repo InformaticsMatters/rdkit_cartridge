@@ -54,7 +54,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/9.5/main/postgresql.conf
 
 
 USER root
-ENV RDKIT_BRANCH=master
+ENV RDKIT_BRANCH=Release_2016_03_1
 RUN git clone -b $RDKIT_BRANCH --single-branch https://github.com/rdkit/rdkit.git
 
 # hack to fix broken CMakeLists.txt
