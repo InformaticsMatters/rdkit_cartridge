@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
  postgresql-plpython3-9.5\
  git
 
-ENV RDKIT_BRANCH=master
+ENV RDKIT_BRANCH=Release_2017_09_1
 RUN git clone -b $RDKIT_BRANCH --single-branch https://github.com/rdkit/rdkit.git
 
 ENV RDBASE=/rdkit
@@ -31,10 +31,11 @@ ENV PYTHONPATH=$PYTHONPATH:$RDBASE
 
 RUN mkdir $RDBASE/build
 WORKDIR $RDBASE/build
-RUN cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PGSQL=ON -DPostgreSQL_ROOT=/usr/lib/postgresql/9.5 -DPostgreSQL_TYPE_INCLUDE_DIR=/usr/include/postgresql/9.5/server ..
-RUN make
-RUN make install
-RUN sh Code/PgSQL/rdkit/pgsql_install.sh
+RUN cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PGSQL=ON -DPostgreSQL_ROOT=/usr/lib/postgresql/9.5 -DPostgreSQL_TYPE_INCLUDE_DIR=/usr/include/postgresql/9.5/server .. &&\
+ make &&\
+ make install &&\
+ sh Code/PgSQL/rdkit/pgsql_install.sh &&\
+ make clean
 
 WORKDIR $RDBASE
 USER postgres
