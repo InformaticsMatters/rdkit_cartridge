@@ -38,5 +38,4 @@ RUN cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PGSQL=ON -DPostgreSQL_ROOT=/u
  make clean
 
 WORKDIR $RDBASE
-USER postgres
 
