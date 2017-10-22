@@ -1,4 +1,4 @@
-FROM postgres:9.5
+FROM postgres:9.6
 MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
 # WARNING this takes about an hour to build
 
@@ -37,5 +37,4 @@ RUN make install
 RUN sh Code/PgSQL/rdkit/pgsql_install.sh
 
 WORKDIR $RDBASE
-USER postgres
 
