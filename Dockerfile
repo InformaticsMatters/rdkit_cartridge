@@ -3,7 +3,8 @@ MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
 # WARNING this takes about an hour to build
 
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get -y upgrade &&\
+ apt-get install -y \
  build-essential\
  python-numpy\
  cmake\
@@ -22,7 +23,7 @@ RUN apt-get update && apt-get install -y \
  postgresql-plpython3-9.5\
  git
 
-ENV RDKIT_BRANCH=Release_2017_09_1
+ENV RDKIT_BRANCH=Release_2017_09_2
 RUN git clone -b $RDKIT_BRANCH --single-branch https://github.com/rdkit/rdkit.git
 
 ENV RDBASE=/rdkit
